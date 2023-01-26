@@ -33,6 +33,13 @@ source venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
+- Создать файл .env добавть переменные среды
+
+```
+PRACTICUM_TOKEN=
+TELEGRAM_TOKEN=
+TELEGRAM_CHAT_ID=
+```
 
 - В папке с файлом homework.py выполните команду:
 
