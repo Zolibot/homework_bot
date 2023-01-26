@@ -38,6 +38,7 @@ HOMEWORK_VERDICTS = {
 def check_tokens():
     """Проверяет доступность переменных окружения."""
     logger.debug("Проверяем доступность переменных окружения")
+
     if PRACTICUM_TOKEN and TELEGRAM_CHAT_ID and TELEGRAM_TOKEN:
         return True
     else:
@@ -47,6 +48,7 @@ def check_tokens():
 def send_message(bot, message):
     """Отправляет сообщение в Telegram чат."""
     logger.debug("Отправляем сообщение в Telegram")
+
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.debug(
@@ -60,6 +62,7 @@ def send_message(bot, message):
 def get_api_answer(timestamp):
     """Делает запрос к единственному эндпоинту API-сервиса."""
     logger.debug("Отправляем запрос к эндпоинту API-сервиса")
+
     try:
         homework_statuses = requests.get(
             url=ENDPOINT,
@@ -80,6 +83,7 @@ def get_api_answer(timestamp):
 def check_response(response):
     """Проверяет ответ API на соответствие документации."""
     logger.info("началo проверки ответа сервера")
+
     if type(response) is not dict:
         raise TypeError('Нет словоря в ответе API')
 
@@ -118,6 +122,7 @@ def parse_status(homework):
 def main():
     """Основная логика работы бота."""
     logger.info('Проверка переменных')
+
     if not check_tokens():
         logger.critical('Отсутствуют одна или несколько переменных окружения')
         sys.exit('Отсутствуют одна или несколько переменных окружения')
