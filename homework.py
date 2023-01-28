@@ -3,9 +3,7 @@ import sys
 import time
 import logging
 import requests
-
 import telegram
-from http import HTTPStatus
 from dotenv import load_dotenv
 
 load_dotenv()
