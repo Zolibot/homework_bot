@@ -11,7 +11,7 @@ class RequestUnclear(Exception):
 
 
 class DateInResponseNotExist(Exception):
-    """Неясный запрос сервиса."""
+    """Не даты в ответе."""
 
     pass
 
