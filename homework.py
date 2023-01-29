@@ -12,7 +12,7 @@ from exception import (
     DateInResponseNotExist,
     RequestUnclear,
     ResponseCodeNotCorrect,
-    UnknownTaskStatus
+    UnknownTaskStatus,
 )
 
 load_dotenv()
@@ -46,10 +46,10 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
     except telegram.TelegramError as error:
-        logging.error(f'Ошибка Отправки сообщения: {error}')
+        logging.error(f'Ошибка отправки сообщения: {error}', exc_info=True)
     else:
         logging.debug(
-            f'Отправлено на chat_id:{TELEGRAM_CHAT_ID},сообщениe: {message}'
+            f'Отправлено на chat_id:{TELEGRAM_CHAT_ID}, сообщениe: {message}'
         )
 
 
@@ -65,23 +65,32 @@ def get_api_answer(timestamp):
 
     try:
         response = requests.get(**params_request)
-        if response.status_code != HTTPStatus.OK:
-            raise ResponseCodeNotCorrect('API возвращает код, отличный от 200')
     except requests.RequestException as error:
-        raise RequestUnclear(f'Нет соединения c сервером: {error}')
+        raise RequestUnclear(
+            f'Нет соединения c сервером: {error}\n'
+            f'Параметры запроса: {params_request}'
+        )
     except Exception as error:
         raise ResponseCodeNotCorrect(
-            f'API возвращает код, отличный от 200: {error}'
+            f'API возвращает код, отличный от 200: {error}\n'
+            f'Код ошибки: {response.status_code}\n'
+            f'Параметры запроса: {params_request}'
         )
-    else:
-        logging.info('Запрос к API выполнен успешно')
+
+    if response.status_code != HTTPStatus.OK:
+        raise ResponseCodeNotCorrect(
+            'Непредвиденная ошибка при попытке соединения к API-сервиса\n'
+            f'Код ошибки: {response.status_code}\n'
+            f'Параметры запроса: {params_request}'
+        )
+    logging.info('Запрос к API выполнен успешно')
 
     return response.json()
 
 
 def check_response(response):
     """Проверяет ответ API на соответствие документации."""
-    logging.info('началo проверки ответа сервера')
+    logging.info('Началo проверки ответа сервера')
 
     if not isinstance(response, dict):
         raise TypeError('Нет словоря в ответе API')
@@ -96,6 +105,7 @@ def check_response(response):
 
 def parse_status(homework):
     """Извлекает статус из конкретной домашней работы."""
+    logging.info('Извлекает статус')
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
 
@@ -113,6 +123,11 @@ def parse_status(homework):
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
+def convert_time(timestamp):
+    """Перевод из UNIX времени в читаймый вид."""
+    return time.strftime('%d.%m.%Y %H:%M:%S', time.localtime(timestamp))
+
+
 def main():
     """Основная логика работы бота."""
     logging.info('Проверка переменных')
@@ -123,24 +138,35 @@ def main():
         sys.exit(exit_message)
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    timestamp = 1674568800  # int(time.time())
     cache_message = ''
     cache_error_message = ''
+    message = ''
 
     while True:
         try:
-            response = get_api_answer(int(time.time()))
+            response = get_api_answer(timestamp)
+            last_timestamp = timestamp
             logging.info(response)
+            timestamp = response.get('current_date')
             homework = check_response(response)
             if homework:
                 message = parse_status(homework[0])
-                if message != cache_message:
-                    send_message(bot, message)
+            if message != cache_message:
+                send_message(bot, message)
                 cache_message = message
             else:
-                logging.info('Список домашних работ пустой')
+                logging.debug('Нет новых статусов')
+                log_status_message = (
+                    'Список домашних работ пустой \n'
+                    f'c {convert_time(last_timestamp)} '
+                    f'до {convert_time(timestamp)}'
+                )
+                logging.info(log_status_message)
+                send_message(bot, log_status_message)
         except Exception as error:
             message_error = f'Сбой в работе программы: {error}'
-            logging.error(error)
+            logging.error(error, exc_info=True)
             if message_error != cache_error_message:
                 send_message(bot, message_error)
                 cache_error_message = message_error
