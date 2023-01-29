@@ -138,7 +138,7 @@ def main():
         sys.exit(exit_message)
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    timestamp = 1674568800  # int(time.time())
+    timestamp = int(time.time())
     cache_message = ''
     cache_error_message = ''
     message = ''
