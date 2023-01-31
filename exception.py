@@ -4,6 +4,12 @@ class UnexpectedServerError(Exception):
     pass
 
 
+class ResponseCodeNotCorrect(Exception):
+    """Некорректный код ответа сервера."""
+
+    pass
+
+
 class RequestUnclear(Exception):
     """Неясный запрос сервиса."""
 
