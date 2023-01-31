@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 import time
+from datetime import datetime
 from http import HTTPStatus
 
 import requests
@@ -11,7 +12,7 @@ from dotenv import load_dotenv
 from exception import (
     DateInResponseNotExist,
     RequestUnclear,
-    ResponseCodeNotCorrect,
+    UnexpectedServerError,
     UnknownTaskStatus,
 )
 
@@ -71,14 +72,14 @@ def get_api_answer(timestamp):
             f'Параметры запроса: {params_request}'
         )
     except Exception as error:
-        raise ResponseCodeNotCorrect(
+        raise UnexpectedServerError(
             f'API возвращает код, отличный от 200: {error}\n'
             f'Код ошибки: {response.status_code}\n'
             f'Параметры запроса: {params_request}'
         )
 
     if response.status_code != HTTPStatus.OK:
-        raise ResponseCodeNotCorrect(
+        raise UnexpectedServerError(
             'Непредвиденная ошибка при попытке соединения к API-сервиса\n'
             f'Код ошибки: {response.status_code}\n'
             f'Параметры запроса: {params_request}'
@@ -125,7 +126,7 @@ def parse_status(homework):
 
 def convert_time(timestamp):
     """Перевод из UNIX времени в читаймый вид."""
-    return time.strftime('%d.%m.%Y %H:%M:%S', time.localtime(timestamp))
+    return str(datetime.fromtimestamp(timestamp))
 
 
 def main():

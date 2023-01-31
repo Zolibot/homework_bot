@@ -1,5 +1,5 @@
-class ResponseCodeNotCorrect(Exception):
-    """Некорректный ответ сервер."""
+class UnexpectedServerError(Exception):
+    """Некорректный ответ сервера."""
 
     pass
 
