@@ -161,7 +161,7 @@ def main():
                     f'до {convert_time(timestamp)}'
                 )
                 logging.info(message)
-            if message != cache_message:
+            if message.split('\n')[0] != cache_message.split('\n')[0]:
                 send_message(bot, message)
                 cache_message = message
             else:
