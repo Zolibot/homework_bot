@@ -144,7 +144,6 @@ def main():
     timestamp = int(time.time())
     cache_message = ''
     cache_error_message = ''
-    message = ''
 
     while True:
         try:
@@ -155,18 +154,18 @@ def main():
             homework = check_response(response)
             if homework:
                 message = parse_status(homework[0])
+            else:
+                message = (
+                    'Список домашних работ пустой \n'
+                    f'c {convert_time(last_timestamp)} '
+                    f'до {convert_time(timestamp)}'
+                )
+                logging.info(message)
             if message != cache_message:
                 send_message(bot, message)
                 cache_message = message
             else:
                 logging.debug('Нет новых статусов')
-                log_status_message = (
-                    'Список домашних работ пустой \n'
-                    f'c {convert_time(last_timestamp)} '
-                    f'до {convert_time(timestamp)}'
-                )
-                logging.info(log_status_message)
-                send_message(bot, log_status_message)
         except Exception as error:
             message_error = f'Сбой в работе программы: {error}'
             logging.error(error, exc_info=True)
